@@ -7,6 +7,24 @@
   </PropertyGroup>
 	<PropertyGroup>
 		<DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+		<Authors>Dipl.-Ing.(FH) Guido Agnesmeyer</Authors>
+		<Description>Simple Json Serializer</Description>
+		<Copyright>(C) 2021 Dipl.-Ing.(FH) Guido Agnesmeyer</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/ITAgnesmeyer/Diga.Core.Json</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/ITAgnesmeyer/Diga.Core.Json</RepositoryUrl>
+		<RepositoryType>Git</RepositoryType>
+		<PackageTags>Json</PackageTags>
+		<AssemblyVersion>1.0.1.1</AssemblyVersion>
+		<FileVersion>1.0.1.1</FileVersion>
+		<Version>1.0.1</Version>
+		<PackageIcon>logo.png</PackageIcon>
+		<RootNamespace>Diga.Core.Json</RootNamespace>
 	</PropertyGroup>
+
+
+	<ItemGroup>
+		<None Include="logo.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
