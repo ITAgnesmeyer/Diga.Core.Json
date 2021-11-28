@@ -11,20 +11,13 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Serialization;
-// ReSharper disable UnusedMember.Local
-
-
 
 namespace Diga.Core.Json
 {
-    internal delegate TResult JFunc<T, TResult>(T arg);
-    internal delegate void JAction<T1, T2>(T1 arg1, T2 arg2);
-
-
     /// <summary>
     /// A utility class to serialize and deserialize JSON.
     /// </summary>
-    public static class Json
+    public static class DigaJson
     {
         private const string _null = "null";
         private const string _true = "true";
@@ -56,7 +49,7 @@ namespace Diga.Core.Json
         /// <returns>
         /// A JSON representation of the serialized object.
         /// </returns>
-        public static string Serialize(object value, JsonOptions options = null)
+        public static string Serialize(object value, DigaJsonOptions options = null)
         {
             using (var writer = new StringWriter())
             {
@@ -71,12 +64,12 @@ namespace Diga.Core.Json
         /// <param name="writer">The output writer. May not be null.</param>
         /// <param name="value">The object to serialize.</param>
         /// <param name="options">Options to use for serialization.</param>
-        public static void Serialize(TextWriter writer, object value, JsonOptions options = null)
+        public static void Serialize(TextWriter writer, object value, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             var jsonp = options.JsonPCallback.Nullify();
             if (jsonp != null)
             {
@@ -101,7 +94,7 @@ namespace Diga.Core.Json
         /// <returns>
         /// An instance of an object representing the input data.
         /// </returns>
-        private static object Deserialize(string text, Type targetType = null, JsonOptions options = null)
+        private static object Deserialize(string text, Type targetType = null, DigaJsonOptions options = null)
         {
             if (text == null)
             {
@@ -131,7 +124,7 @@ namespace Diga.Core.Json
         /// <returns>
         /// An instance of an object representing the input data.
         /// </returns>
-        public static T Deserialize<T>(TextReader reader, JsonOptions options = null)
+        public static T Deserialize<T>(TextReader reader, DigaJsonOptions options = null)
         {
             return (T)Deserialize(reader, typeof(T), options);
         }
@@ -145,7 +138,7 @@ namespace Diga.Core.Json
         /// <returns>
         /// An instance of an object representing the input data.
         /// </returns>
-        public static T Deserialize<T>(string text, JsonOptions options = null)
+        public static T Deserialize<T>(string text, DigaJsonOptions options = null)
         {
             return (T)Deserialize(text, typeof(T), options);
         }
@@ -159,12 +152,12 @@ namespace Diga.Core.Json
         /// <returns>
         /// An instance of an object representing the input data.
         /// </returns>
-        private static object Deserialize(TextReader reader, Type targetType = null, JsonOptions options = null)
+        private static object Deserialize(TextReader reader, Type targetType = null, DigaJsonOptions options = null)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             if (targetType == null || targetType == typeof(object))
                 return ReadValue(reader, options);
 
@@ -186,7 +179,7 @@ namespace Diga.Core.Json
         /// <param name="text">The text to deserialize.</param>
         /// <param name="target">The object instance to populate.</param>
         /// <param name="options">Options to use for deserialization.</param>
-        public static void DeserializeToTarget(string text, object target, JsonOptions options = null)
+        public static void DeserializeToTarget(string text, object target, DigaJsonOptions options = null)
         {
             if (text == null)
                 return;
@@ -204,7 +197,7 @@ namespace Diga.Core.Json
         /// <param name="reader">The input reader. May not be null.</param>
         /// <param name="target">The object instance to populate.</param>
         /// <param name="options">Options to use for deserialization.</param>
-        public static void DeserializeToTarget(TextReader reader, object target, JsonOptions options = null)
+        public static void DeserializeToTarget(TextReader reader, object target, DigaJsonOptions options = null)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
@@ -222,9 +215,9 @@ namespace Diga.Core.Json
         /// <param name="input">The input object.</param>
         /// <param name="target">The target object.</param>
         /// <param name="options">Options to use.</param>
-        public static void Apply(object input, object target, JsonOptions options = null)
+        public static void Apply(object input, object target, DigaJsonOptions options = null)
         {
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             if (target is Array array && !array.IsReadOnly)
             {
                 Apply(input as IEnumerable, array, options);
@@ -244,7 +237,7 @@ namespace Diga.Core.Json
             ApplyToListTarget(target, input as IEnumerable, lo, options);
         }
 
-        internal static object CreateInstance(object target, Type type, int elementsCount, JsonOptions options, object value)
+        internal static object CreateInstance(object target, Type type, int elementsCount, DigaJsonOptions options, object value)
         {
             try
             {
@@ -256,9 +249,9 @@ namespace Diga.Core.Json
                         ["value"] = value
                     };
 
-                    var e = new JsonEventArgs(null, type, og, options, null, target)
+                    var e = new DigaJsonEventArgs(null, type, og, options, null, target)
                     {
-                        EventType = JsonEventType.CreateInstance
+                        EventType = DigaJsonEventType.CreateInstance
                     };
                     options.CreateInstanceCallback(e);
                     if (e.Handled)
@@ -275,12 +268,12 @@ namespace Diga.Core.Json
             }
             catch (Exception e)
             {
-                HandleException(new JsonException("JSO0001: JSON error detected. Cannot create an instance of the '" + type.Name + "' type.", e), options);
+                HandleException(new DigaJsonException("JSO0001: JSON error detected. Cannot create an instance of the '" + type.Name + "' type.", e), options);
                 return null;
             }
         }
 
-        internal static JsonListObject GetListObject(Type type, JsonOptions options, object target, object value, IDictionary dictionary, string key)
+        internal static DigaJsonListObject GetListObject(Type type, DigaJsonOptions options, object target, object value, IDictionary dictionary, string key)
         {
             if (options.GetListObjectCallback != null)
             {
@@ -290,15 +283,15 @@ namespace Diga.Core.Json
                     ["type"] = type
                 };
 
-                var e = new JsonEventArgs(null, value, og, options, key, target)
+                var e = new DigaJsonEventArgs(null, value, og, options, key, target)
                 {
-                    EventType = JsonEventType.GetListObject
+                    EventType = DigaJsonEventType.GetListObject
                 };
                 options.GetListObjectCallback(e);
                 if (e.Handled)
                 {
                     og.TryGetValue("type", out var outType);
-                    return outType as JsonListObject;
+                    return outType as DigaJsonListObject;
                 }
             }
 
@@ -311,7 +304,7 @@ namespace Diga.Core.Json
             if (type != null && type.IsGenericType)
             {
                 if (type.GetGenericTypeDefinition() == typeof(ICollection<>))
-                    return Activator.CreateInstance(typeof(ICollectionTObject<>).MakeGenericType(type.GetGenericArguments()[0])) as JsonListObject;
+                    return Activator.CreateInstance(typeof(ICollectionTObject<>).MakeGenericType(type.GetGenericArguments()[0])) as DigaJsonListObject;
             }
 
             if (type != null)
@@ -321,7 +314,7 @@ namespace Diga.Core.Json
                         continue;
 
                     if (iface.GetGenericTypeDefinition() == typeof(ICollection<>))
-                        return (JsonListObject)Activator.CreateInstance(
+                        return (DigaJsonListObject)Activator.CreateInstance(
                             typeof(ICollectionTObject<>).MakeGenericType(iface.GetGenericArguments()[0]));
                 }
 
@@ -330,7 +323,7 @@ namespace Diga.Core.Json
 
 
 
-        internal static void ApplyToListTarget(object target, IEnumerable input, JsonListObject list, JsonOptions options)
+        internal static void ApplyToListTarget(object target, IEnumerable input, DigaJsonListObject list, DigaJsonOptions options)
         {
             if (list.List == null)
                 return;
@@ -399,7 +392,7 @@ namespace Diga.Core.Json
             }
         }
 
-        internal static void Apply(IEnumerable input, Array target, JsonOptions options)
+        internal static void Apply(IEnumerable input, Array target, DigaJsonOptions options)
         {
             if (target == null || target.Rank != 1)
                 return;
@@ -429,7 +422,7 @@ namespace Diga.Core.Json
 
         internal static bool TryGetObjectDefaultValue(Attribute att, out object value)
         {
-            if (att is JsonAttribute jsa && jsa.HasDefaultValue)
+            if (att is DigaJsonAttribute jsa && jsa.HasDefaultValue)
             {
                 value = jsa.DefaultValue;
                 return true;
@@ -447,7 +440,7 @@ namespace Diga.Core.Json
 
         internal static string GetObjectName(Attribute att)
         {
-            if (att is JsonAttribute jsa && !string.IsNullOrEmpty(jsa.Name))
+            if (att is DigaJsonAttribute jsa && !string.IsNullOrEmpty(jsa.Name))
                 return jsa.Name;
 
             if (att is XmlAttributeAttribute xaa && !string.IsNullOrEmpty(xaa.AttributeName))
@@ -535,7 +528,7 @@ namespace Diga.Core.Json
             return false;
         }
 
-        private static void Apply(IDictionary dictionary, object target, JsonOptions options)
+        private static void Apply(IDictionary dictionary, object target, DigaJsonOptions options)
         {
             if (dictionary == null || target == null)
                 return;
@@ -570,9 +563,9 @@ namespace Diga.Core.Json
                         ["dictionary"] = dictionary
                     };
 
-                    var e = new JsonEventArgs(null, entryValue, og, options, entryKey, target)
+                    var e = new DigaJsonEventArgs(null, entryValue, og, options, entryKey, target)
                     {
-                        EventType = JsonEventType.MapEntry
+                        EventType = DigaJsonEventType.MapEntry
                     };
                     options.MapEntryCallback(e);
                     if (e.Handled)
@@ -586,7 +579,7 @@ namespace Diga.Core.Json
             }
         }
 
-        internal static JsonAttribute GetJsonAttribute(MemberInfo pi)
+        internal static DigaJsonAttribute GetJsonAttribute(MemberInfo pi)
         {
             var attributes = pi.GetCustomAttributes(true);
             if (attributes.Length == 0)
@@ -598,7 +591,7 @@ namespace Diga.Core.Json
                 if (!(obj is Attribute att))
                     continue;
 
-                if (att is JsonAttribute jAttributes)
+                if (att is DigaJsonAttribute jAttributes)
                     return jAttributes;
 
             }
@@ -645,7 +638,7 @@ namespace Diga.Core.Json
         /// <returns>
         /// An object of the target type whose value is equivalent to input value.
         /// </returns>
-        internal static object ChangeType(object value, Type conversionType, JsonOptions options)
+        internal static object ChangeType(object value, Type conversionType, DigaJsonOptions options)
         {
             return ChangeType(null, value, conversionType, options);
         }
@@ -661,7 +654,7 @@ namespace Diga.Core.Json
         /// <returns>
         /// An object of the target type whose value is equivalent to input value.
         /// </returns>
-        public static object ChangeType(object target, object value, Type conversionType, JsonOptions options = null)
+        public static object ChangeType(object target, object value, Type conversionType, DigaJsonOptions options = null)
         {
             if (conversionType == null)
                 throw new ArgumentNullException(nameof(conversionType));
@@ -669,7 +662,7 @@ namespace Diga.Core.Json
             if (conversionType == typeof(object))
                 return value;
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             if (!(value is string))
             {
                 if (conversionType.IsArray)
@@ -716,7 +709,7 @@ namespace Diga.Core.Json
 
             if (conversionType == typeof(byte[]) && value is string str)
             {
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.ByteArrayAsBase64))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.ByteArrayAsBase64))
                 {
                     try
                     {
@@ -724,7 +717,7 @@ namespace Diga.Core.Json
                     }
                     catch (Exception e)
                     {
-                        HandleException(new JsonException("JSO0013: JSON deserialization error with a base64 array as string.", e), options);
+                        HandleException(new DigaJsonException("JSO0013: JSON deserialization error with a base64 array as string.", e), options);
                         return null;
                     }
                 }
@@ -756,7 +749,7 @@ namespace Diga.Core.Json
             return Conversions.ChangeType(value, conversionType, null, null);
         }
 
-        private static object[] ReadArray(TextReader reader, JsonOptions options)
+        private static object[] ReadArray(TextReader reader, DigaJsonOptions options)
         {
             if (!ReadWhitespaces(reader))
                 return null;
@@ -783,41 +776,41 @@ namespace Diga.Core.Json
             while (true);
         }
 
-        private static JsonException GetExpectedCharacterException(long? pos, char c)
+        private static DigaJsonException GetExpectedCharacterException(long? pos, char c)
         {
             if (pos < 0)
-                return new JsonException("JSO0002: JSON deserialization error detected. Expecting '" + c + "' character.");
+                return new DigaJsonException("JSO0002: JSON deserialization error detected. Expecting '" + c + "' character.");
 
-            return new JsonException("JSO0003: JSON deserialization error detected at position " + pos + ". Expecting '" + c + "' character.");
+            return new DigaJsonException("JSO0003: JSON deserialization error detected at position " + pos + ". Expecting '" + c + "' character.");
         }
 
-        private static JsonException GetUnexpectedCharacterException(long? pos, char c)
+        private static DigaJsonException GetUnexpectedCharacterException(long? pos, char c)
         {
             if (pos < 0)
-                return new JsonException("JSO0004: JSON deserialization error detected. Unexpected '" + c + "' character.");
+                return new DigaJsonException("JSO0004: JSON deserialization error detected. Unexpected '" + c + "' character.");
 
-            return new JsonException("JSO0005: JSON deserialization error detected at position " + pos + ". Unexpected '" + c + "' character.");
+            return new DigaJsonException("JSO0005: JSON deserialization error detected at position " + pos + ". Unexpected '" + c + "' character.");
         }
 
-        private static JsonException GetExpectedHexaCharacterException(long? pos)
+        private static DigaJsonException GetExpectedHexaCharacterException(long? pos)
         {
             if (pos < 0)
-                return new JsonException("JSO0006: JSON deserialization error detected. Expecting hexadecimal character.");
+                return new DigaJsonException("JSO0006: JSON deserialization error detected. Expecting hexadecimal character.");
 
-            return new JsonException("JSO0007: JSON deserialization error detected at position " + pos + ". Expecting hexadecimal character.");
+            return new DigaJsonException("JSO0007: JSON deserialization error detected at position " + pos + ". Expecting hexadecimal character.");
         }
 
-        private static JsonException GetTypeException(long? pos, string typeName, Exception inner)
+        private static DigaJsonException GetTypeException(long? pos, string typeName, Exception inner)
         {
             if (pos < 0)
-                return new JsonException("JSO0010: JSON deserialization error detected for '" + typeName + "' type.", inner);
+                return new DigaJsonException("JSO0010: JSON deserialization error detected for '" + typeName + "' type.", inner);
 
-            return new JsonException("JSO0011: JSON deserialization error detected for '" + typeName + "' type at position " + pos + ".", inner);
+            return new DigaJsonException("JSO0011: JSON deserialization error detected for '" + typeName + "' type at position " + pos + ".", inner);
         }
 
-        private static JsonException GetEofException(char c)
+        private static DigaJsonException GetEofException(char c)
         {
-            return new JsonException("JSO0012: JSON deserialization error detected at end of text. Expecting '" + c + "' character.");
+            return new DigaJsonException("JSO0012: JSON deserialization error detected at end of text. Expecting '" + c + "' character.");
         }
 
         private static long? GetPosition(TextReader reader)
@@ -851,7 +844,7 @@ namespace Diga.Core.Json
             return -1;
         }
 
-        private static Dictionary<string, object> ReadDictionary(TextReader reader, JsonOptions options)
+        private static Dictionary<string, object> ReadDictionary(TextReader reader, DigaJsonOptions options)
         {
             if (!ReadWhitespaces(reader))
                 return null;
@@ -909,7 +902,7 @@ namespace Diga.Core.Json
             while (true);
         }
 
-        private static string ReadString(TextReader reader, JsonOptions options)
+        private static string ReadString(TextReader reader, DigaJsonOptions options)
         {
             var sb = new StringBuilder();
             do
@@ -983,7 +976,7 @@ namespace Diga.Core.Json
             return sb.ToString();
         }
 
-        private static ISerializable ReadSerializable(TextReader reader, JsonOptions options, string typeName, Dictionary<string, object> values)
+        private static ISerializable ReadSerializable(TextReader reader, DigaJsonOptions options, string typeName, Dictionary<string, object> values)
         {
             Type type;
             try
@@ -1018,12 +1011,12 @@ namespace Diga.Core.Json
             }
         }
 
-        private static object ReadValue(TextReader reader, JsonOptions options)
+        private static object ReadValue(TextReader reader, DigaJsonOptions options)
         {
             return ReadValue(reader, options, false, out _);
         }
 
-        private static object ReadValue(TextReader reader, JsonOptions options, bool arrayMode, out bool arrayEnd)
+        private static object ReadValue(TextReader reader, DigaJsonOptions options, bool arrayMode, out bool arrayEnd)
         {
             arrayEnd = false;
             // 1st chance type is determined by format
@@ -1048,7 +1041,7 @@ namespace Diga.Core.Json
             {
                 reader.Read();
                 var s = ReadString(reader, options);
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.AutoParseDateTime))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.AutoParseDateTime))
                 {
                     if (TryParseDateTime(s, options.DateTimeStyles, out var dt))
                         return dt;
@@ -1059,7 +1052,7 @@ namespace Diga.Core.Json
             if (c == '{')
             {
                 var dic = ReadDictionary(reader, options);
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseISerializable))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseISerializable))
                 {
                     if (dic.TryGetValue(_serializationTypeToken, out var o))
                     {
@@ -1101,7 +1094,7 @@ namespace Diga.Core.Json
             return null;
         }
 
-        private static object ReadNew(TextReader reader, JsonOptions options, out bool arrayEnd)
+        private static object ReadNew(TextReader reader, DigaJsonOptions options, out bool arrayEnd)
         {
             arrayEnd = false;
             var sb = new StringBuilder();
@@ -1143,7 +1136,7 @@ namespace Diga.Core.Json
             return null;
         }
 
-        private static object ReadNumberOrLiteral(TextReader reader, JsonOptions options, out bool arrayEnd)
+        private static object ReadNumberOrLiteral(TextReader reader, DigaJsonOptions options, out bool arrayEnd)
         {
             arrayEnd = false;
             var sb = new StringBuilder();
@@ -1245,7 +1238,7 @@ namespace Diga.Core.Json
         /// <returns>true if the text was converted successfully; otherwise, false.</returns>
         private static bool TryParseDateTime(string text, out DateTime dt)
         {
-            return TryParseDateTime(text, JsonOptions._defaultDateTimeStyles, out dt);
+            return TryParseDateTime(text, DigaJsonOptions._defaultDateTimeStyles, out dt);
         }
 
         /// <summary>
@@ -1270,7 +1263,7 @@ namespace Diga.Core.Json
                     using (var reader = new StringReader(text))
                     {
                         reader.Read(); // skip "
-                        var options = new JsonOptions
+                        var options = new DigaJsonOptions
                         {
                             ThrowExceptions = false
                         };
@@ -1437,7 +1430,7 @@ namespace Diga.Core.Json
             return DateTime.TryParse(text, null, styles, out dt);
         }
 
-        internal static void HandleException(Exception ex, JsonOptions options)
+        internal static void HandleException(Exception ex, DigaJsonOptions options)
         {
             if (options != null && !options.ThrowExceptions)
             {
@@ -1447,7 +1440,7 @@ namespace Diga.Core.Json
             throw ex;
         }
 
-        private static byte GetHexValue(TextReader reader, char c, JsonOptions options)
+        private static byte GetHexValue(TextReader reader, char c, DigaJsonOptions options)
         {
             c = char.ToLower(c);
             if (c < '0')
@@ -1472,7 +1465,7 @@ namespace Diga.Core.Json
             return 0;
         }
 
-        private static ushort ReadX4(TextReader reader, JsonOptions options)
+        private static ushort ReadX4(TextReader reader, DigaJsonOptions options)
         {
             var u = 0;
             for (var i = 0; i < 4; i++)
@@ -1480,7 +1473,7 @@ namespace Diga.Core.Json
                 u *= 16;
                 if (reader.Peek() < 0)
                 {
-                    HandleException(new JsonException("JSO0008: JSON deserialization error detected at end of stream. Expecting hexadecimal character."), options);
+                    HandleException(new DigaJsonException("JSO0008: JSON deserialization error detected at end of stream. Expecting hexadecimal character."), options);
                     return 0;
                 }
 
@@ -1520,18 +1513,18 @@ namespace Diga.Core.Json
         /// <param name="value">The value to writer.</param>
         /// <param name="objectGraph">A graph of objects to track cyclic serialization.</param>
         /// <param name="options">The options to use.</param>
-        public static void WriteValue(TextWriter writer, object value, IDictionary<object, object> objectGraph, JsonOptions options = null)
+        public static void WriteValue(TextWriter writer, object value, IDictionary<object, object> objectGraph, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
 
             objectGraph = objectGraph ?? new Dictionary<object, object>();
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             if (options.WriteValueCallback != null)
             {
-                var e = new JsonEventArgs(writer, value, objectGraph, options)
+                var e = new DigaJsonEventArgs(writer, value, objectGraph, options)
                 {
-                    EventType = JsonEventType.WriteValue
+                    EventType = DigaJsonEventType.WriteValue
                 };
                 options.WriteValueCallback(e);
                 if (e.Handled)
@@ -1593,7 +1586,7 @@ namespace Diga.Core.Json
 
             if (value is Enum @enum)
             {
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.EnumAsText))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.EnumAsText))
                 {
                     WriteString(writer, value.ToString());
                 }
@@ -1606,7 +1599,7 @@ namespace Diga.Core.Json
 
             if (value is TimeSpan ts)
             {
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.TimeSpanAsText))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.TimeSpanAsText))
                 {
                     WriteString(writer, ts.ToString("g", CultureInfo.InvariantCulture));
                 }
@@ -1619,21 +1612,21 @@ namespace Diga.Core.Json
 
             if (value is DateTimeOffset dto)
             {
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.DateFormatJs))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.DateFormatJs))
                 {
                     writer.Write(_dateStartJs);
                     writer.Write((dto.ToUniversalTime().Ticks - _minDateTimeTicks) / 10000);
                     writer.Write(_dateEndJs);
                 }
-                else if (options.SerializationOptions.HasFlag(JsonSerializationOptions.DateTimeOffsetFormatCustom) && !string.IsNullOrEmpty(options.DateTimeOffsetFormat))
+                else if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.DateTimeOffsetFormatCustom) && !string.IsNullOrEmpty(options.DateTimeOffsetFormat))
                 {
                     WriteString(writer, dto.ToUniversalTime().ToString(options.DateTimeOffsetFormat));
                 }
-                else if (options.SerializationOptions.HasFlag(JsonSerializationOptions.DateFormatIso8601))
+                else if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.DateFormatIso8601))
                 {
                     WriteString(writer, dto.ToUniversalTime().ToString("s"));
                 }
-                else if (options.SerializationOptions.HasFlag(JsonSerializationOptions.DateFormatRoundtripUtc))
+                else if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.DateFormatRoundtripUtc))
                 {
                     WriteString(writer, dto.ToUniversalTime().ToString("o"));
                 }
@@ -1649,24 +1642,24 @@ namespace Diga.Core.Json
 
             if (value is DateTime dt)
             {
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.DateFormatJs))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.DateFormatJs))
                 {
                     writer.Write(_dateStartJs);
                     writer.Write((dt.ToUniversalTime().Ticks - _minDateTimeTicks) / 10000);
                     writer.Write(_dateEndJs);
                 }
-                else if (options.SerializationOptions.HasFlag(JsonSerializationOptions.DateFormatCustom) && !string.IsNullOrEmpty(options.DateTimeFormat))
+                else if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.DateFormatCustom) && !string.IsNullOrEmpty(options.DateTimeFormat))
                 {
                     WriteString(writer, dt.ToUniversalTime().ToString(options.DateTimeFormat));
                 }
-                else if (options.SerializationOptions.HasFlag(JsonSerializationOptions.DateFormatIso8601))
+                else if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.DateFormatIso8601))
                 {
                     writer.Write('"');
                     writer.Write(EscapeString(dt.ToUniversalTime().ToString("s")), options);
                     AppendTimeZoneUtcOffset(writer, dt);
                     writer.Write('"');
                 }
-                else if (options.SerializationOptions.HasFlag(JsonSerializationOptions.DateFormatRoundtripUtc))
+                else if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.DateFormatRoundtripUtc))
                 {
                     WriteString(writer, dt.ToUniversalTime().ToString("o"));
                 }
@@ -1716,13 +1709,13 @@ namespace Diga.Core.Json
 
             if (objectGraph.ContainsKey(value))
             {
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.ContinueOnCycle))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.ContinueOnCycle))
                 {
                     writer.Write(_null);
                     return;
                 }
 
-                HandleException(new JsonException("JSO0009: Cyclic JSON serialization detected."), options);
+                HandleException(new DigaJsonException("JSO0009: Cyclic JSON serialization detected."), options);
                 return;
             }
 
@@ -1747,7 +1740,7 @@ namespace Diga.Core.Json
                 return;
             }
 
-            if (options.SerializationOptions.HasFlag(JsonSerializationOptions.StreamsAsBase64))
+            if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.StreamsAsBase64))
             {
                 if (value is Stream stream)
                 {
@@ -1767,7 +1760,7 @@ namespace Diga.Core.Json
         /// <param name="objectGraph">The object graph.</param>
         /// <param name="options">The options to use.</param>
         /// <returns>The number of written bytes.</returns>
-        private static long WriteBase64Stream(TextWriter writer, Stream stream, IDictionary<object, object> objectGraph, JsonOptions options = null)
+        private static long WriteBase64Stream(TextWriter writer, Stream stream, IDictionary<object, object> objectGraph, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
@@ -1776,7 +1769,7 @@ namespace Diga.Core.Json
                 throw new ArgumentNullException(nameof(stream));
 
             objectGraph =objectGraph ?? new Dictionary<object, object>();
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             var total = 0L;
 
             if (writer is StreamWriter sw)
@@ -1813,7 +1806,7 @@ namespace Diga.Core.Json
             return total;
         }
 
-        private static long WriteBase64Stream(Stream inputStream, Stream outputStream, JsonOptions options)
+        private static long WriteBase64Stream(Stream inputStream, Stream outputStream, DigaJsonOptions options)
         {
             outputStream.WriteByte((byte)'"');
             // don't dispose this stream or it will dispose the outputStream as well
@@ -1886,7 +1879,7 @@ namespace Diga.Core.Json
         /// <param name="array">The array. May not be null.</param>
         /// <param name="objectGraph">The object graph.</param>
         /// <param name="options">The options to use.</param>
-        private static void WriteArray(TextWriter writer, Array array, IDictionary<object, object> objectGraph, JsonOptions options = null)
+        private static void WriteArray(TextWriter writer, Array array, IDictionary<object, object> objectGraph, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
@@ -1895,8 +1888,8 @@ namespace Diga.Core.Json
                 throw new ArgumentNullException(nameof(array));
 
             objectGraph =objectGraph ?? new Dictionary<object, object>();
-            options = options ?? new JsonOptions();
-            if (options.SerializationOptions.HasFlag(JsonSerializationOptions.ByteArrayAsBase64))
+            options = options ?? new DigaJsonOptions();
+            if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.ByteArrayAsBase64))
             {
                 if (array is byte[] bytes)
                 {
@@ -1915,7 +1908,7 @@ namespace Diga.Core.Json
 
         }
 
-        private static void WriteArray(TextWriter writer, Array array, IDictionary<object, object> objectGraph, JsonOptions options, int[] indices)
+        private static void WriteArray(TextWriter writer, Array array, IDictionary<object, object> objectGraph, DigaJsonOptions options, int[] indices)
         {
             var newIndices = new int[indices.Length + 1];
             for (var i = 0; i < indices.Length; i++)
@@ -1951,7 +1944,7 @@ namespace Diga.Core.Json
         /// <param name="enumerable">The enumerable. May not be null.</param>
         /// <param name="objectGraph">The object graph.</param>
         /// <param name="options">The options to use.</param>
-        private static void WriteEnumerable(TextWriter writer, IEnumerable enumerable, IDictionary<object, object> objectGraph, JsonOptions options = null)
+        private static void WriteEnumerable(TextWriter writer, IEnumerable enumerable, IDictionary<object, object> objectGraph, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
@@ -1960,7 +1953,7 @@ namespace Diga.Core.Json
                 throw new ArgumentNullException(nameof(enumerable));
 
             objectGraph =objectGraph ?? new Dictionary<object, object>();
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             writer.Write('[');
             var first = true;
             foreach (var value in enumerable)
@@ -1985,7 +1978,7 @@ namespace Diga.Core.Json
         /// <param name="dictionary">The dictionary. May not be null.</param>
         /// <param name="objectGraph">The object graph.</param>
         /// <param name="options">The options to use.</param>
-        private static void WriteDictionary(TextWriter writer, IDictionary dictionary, IDictionary<object, object> objectGraph, JsonOptions options = null)
+        private static void WriteDictionary(TextWriter writer, IDictionary dictionary, IDictionary<object, object> objectGraph, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
@@ -1994,7 +1987,7 @@ namespace Diga.Core.Json
                 throw new ArgumentNullException(nameof(dictionary));
 
             objectGraph =objectGraph ?? new Dictionary<object, object>();
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             writer.Write('{');
             var first = true;
             foreach (DictionaryEntry entry in dictionary)
@@ -2009,7 +2002,7 @@ namespace Diga.Core.Json
                     first = false;
                 }
 
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.WriteKeysWithoutQuotes))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.WriteKeysWithoutQuotes))
                 {
                     writer.Write(EscapeString(entryKey));
                 }
@@ -2024,7 +2017,7 @@ namespace Diga.Core.Json
             writer.Write('}');
         }
 
-        private static void WriteSerializable(TextWriter writer, ISerializable serializable, IDictionary<object, object> objectGraph, JsonOptions options)
+        private static void WriteSerializable(TextWriter writer, ISerializable serializable, IDictionary<object, object> objectGraph, DigaJsonOptions options)
         {
             var info = new SerializationInfo(serializable.GetType(), _defaultFormatterConverter);
             var ctx = new StreamingContext(StreamingContextStates.Remoting, null);
@@ -2043,7 +2036,7 @@ namespace Diga.Core.Json
                     first = false;
                 }
 
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.WriteKeysWithoutQuotes))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.WriteKeysWithoutQuotes))
                 {
                     writer.Write(EscapeString(entry.Name));
                 }
@@ -2069,7 +2062,7 @@ namespace Diga.Core.Json
         /// <param name="value">The object to serialize. May not be null.</param>
         /// <param name="objectGraph">The object graph.</param>
         /// <param name="options">The options to use.</param>
-        private static void WriteObject(TextWriter writer, object value, IDictionary<object, object> objectGraph, JsonOptions options = null)
+        private static void WriteObject(TextWriter writer, object value, IDictionary<object, object> objectGraph, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
@@ -2078,10 +2071,10 @@ namespace Diga.Core.Json
                 throw new ArgumentNullException(nameof(value));
 
             objectGraph =objectGraph ?? new Dictionary<object, object>();
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
 
             ISerializable serializable = null;
-            var useISerializable = options.SerializationOptions.HasFlag(JsonSerializationOptions.UseISerializable) || ForceSerializable(value);
+            var useISerializable = options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseISerializable) || ForceSerializable(value);
             if (useISerializable)
             {
                 serializable = value as ISerializable;
@@ -2091,9 +2084,9 @@ namespace Diga.Core.Json
 
             if (options.BeforeWriteObjectCallback != null)
             {
-                var e = new JsonEventArgs(writer, value, objectGraph, options)
+                var e = new DigaJsonEventArgs(writer, value, objectGraph, options)
                 {
-                    EventType = JsonEventType.BeforeWriteObject
+                    EventType = DigaJsonEventType.BeforeWriteObject
                 };
                 options.BeforeWriteObjectCallback(e);
                 if (e.Handled)
@@ -2113,9 +2106,9 @@ namespace Diga.Core.Json
 
             if (options.AfterWriteObjectCallback != null)
             {
-                var e = new JsonEventArgs(writer, value, objectGraph, options)
+                var e = new DigaJsonEventArgs(writer, value, objectGraph, options)
                 {
-                    EventType = JsonEventType.AfterWriteObject
+                    EventType = DigaJsonEventType.AfterWriteObject
                 };
                 options.AfterWriteObjectCallback(e);
             }
@@ -2148,14 +2141,14 @@ namespace Diga.Core.Json
         /// <param name="value">The value.</param>
         /// <param name="objectGraph">The object graph.</param>
         /// <param name="options">The options to use.</param>
-        internal static void WriteNameValue(TextWriter writer, string name, object value, IDictionary<object, object> objectGraph, JsonOptions options = null)
+        internal static void WriteNameValue(TextWriter writer, string name, object value, IDictionary<object, object> objectGraph, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
 
             name =name ?? string.Empty;
-            options = options ?? new JsonOptions();
-            if (options.SerializationOptions.HasFlag(JsonSerializationOptions.WriteKeysWithoutQuotes))
+            options = options ?? new DigaJsonOptions();
+            if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.WriteKeysWithoutQuotes))
             {
                 writer.Write(EscapeString(name));
             }
@@ -2223,7 +2216,7 @@ namespace Diga.Core.Json
         /// <param name="value">The JSON object. May be null.</param>
         /// <param name="options">The options to use. May be null.</param>
         /// <returns>A string containing the formatted object.</returns>
-        public static string SerializeFormatted(object value, JsonOptions options = null)
+        public static string SerializeFormatted(object value, DigaJsonOptions options = null)
         {
             using (var sw = new StringWriter())
             {
@@ -2239,12 +2232,12 @@ namespace Diga.Core.Json
         /// <param name="writer">The output writer. May not be null.</param>
         /// <param name="value">The JSON object. May be null.</param>
         /// <param name="options">The options to use. May be null.</param>
-        public static void SerializeFormatted(TextWriter writer, object value, JsonOptions options = null)
+        public static void SerializeFormatted(TextWriter writer, object value, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             var serialized = Serialize(value, options);
             var deserialized = Deserialize(serialized, typeof(object), options);
             WriteFormatted(writer, deserialized, options);
@@ -2256,7 +2249,7 @@ namespace Diga.Core.Json
         /// <param name="jsonObject">The JSON object. May be null.</param>
         /// <param name="options">The options to use. May be null.</param>
         /// <returns>A string containing the formatted object.</returns>
-        public static string WriteFormatted(object jsonObject, JsonOptions options = null)
+        public static string WriteFormatted(object jsonObject, DigaJsonOptions options = null)
         {
             using (var sw = new StringWriter())
             {
@@ -2271,22 +2264,22 @@ namespace Diga.Core.Json
         /// <param name="writer">The output writer. May not be null.</param>
         /// <param name="jsonObject">The JSON object. May be null.</param>
         /// <param name="options">The options to use. May be null.</param>
-        public static void WriteFormatted(TextWriter writer, object jsonObject, JsonOptions options = null)
+        public static void WriteFormatted(TextWriter writer, object jsonObject, DigaJsonOptions options = null)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             var itw = new IndentedTextWriter(writer, options.FormattingTab);
             WriteFormatted(itw, jsonObject, options);
         }
 
-        private static void WriteFormatted(IndentedTextWriter writer, object jsonObject, JsonOptions options)
+        private static void WriteFormatted(IndentedTextWriter writer, object jsonObject, DigaJsonOptions options)
         {
             if (jsonObject is DictionaryEntry entry)
             {
                 var entryKey = string.Format(CultureInfo.InvariantCulture, "{0}", entry.Key);
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.WriteKeysWithoutQuotes))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.WriteKeysWithoutQuotes))
                 {
                     writer.Write(entryKey);
                     writer.Write(": ");

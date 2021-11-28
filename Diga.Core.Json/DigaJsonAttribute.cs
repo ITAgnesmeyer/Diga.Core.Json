@@ -9,20 +9,20 @@ namespace Diga.Core.Json
     /// Provides options for JSON.
     /// </summary>
     [AttributeUsage(AttributeTargets.All)]
-    public sealed class JsonAttribute : Attribute
+    public sealed class DigaJsonAttribute : Attribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonAttribute"/> class.
+        /// Initializes a new instance of the <see cref="DigaJsonAttribute"/> class.
         /// </summary>
-        public JsonAttribute()
+        public DigaJsonAttribute()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonAttribute"/> class.
+        /// Initializes a new instance of the <see cref="DigaJsonAttribute"/> class.
         /// </summary>
         /// <param name="name">The name to use for JSON serialization and deserialization.</param>
-        public JsonAttribute(string name)
+        public DigaJsonAttribute(string name)
         {
             this.Name = name;
         }

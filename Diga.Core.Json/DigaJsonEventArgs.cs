@@ -9,10 +9,10 @@ namespace Diga.Core.Json
     /// <summary>
     /// Provides data for a JSON event.
     /// </summary>
-    public sealed class JsonEventArgs : EventArgs
+    public sealed class DigaJsonEventArgs : EventArgs
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="DigaJsonEventArgs"/> class.
         /// </summary>
         /// <param name="writer">The writer currently in use.</param>
         /// <param name="value">The value on the stack.</param>
@@ -20,7 +20,7 @@ namespace Diga.Core.Json
         /// <param name="options">The options currently in use.</param>
         /// <param name="name">The field or property name.</param>
         /// <param name="component">The component holding the value.</param>
-        public JsonEventArgs(TextWriter writer, object value, IDictionary<object, object> objectGraph, JsonOptions options, string name = null, object component = null)
+        public DigaJsonEventArgs(TextWriter writer, object value, IDictionary<object, object> objectGraph, DigaJsonOptions options, string name = null, object component = null)
         {
             this.Options = options;
             this.Writer = writer;
@@ -34,7 +34,7 @@ namespace Diga.Core.Json
         /// Gets the options currently in use.
         /// </summary>
         /// <value>The options.</value>
-        public JsonOptions Options { get; }
+        public DigaJsonOptions Options { get; }
 
         /// <summary>
         /// Gets the writer currently in use.
@@ -60,10 +60,10 @@ namespace Diga.Core.Json
         /// <value>
         /// The type of the event.
         /// </value>
-        public JsonEventType EventType { get; set; }
+        public DigaJsonEventType EventType { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="JsonEventArgs"/> is handled.
+        /// Gets or sets a value indicating whether this <see cref="DigaJsonEventArgs"/> is handled.
         /// An handled object can be skipped, not written to the stream. If the object is written, First must be set to false, otherwise it must not be changed.
         /// </summary>
         /// <value><c>true</c> if handled; otherwise, <c>false</c>.</value>

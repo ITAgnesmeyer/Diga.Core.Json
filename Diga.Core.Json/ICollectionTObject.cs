@@ -5,7 +5,7 @@
 
 namespace Diga.Core.Json
 {
-    internal class ICollectionTObject<T> : JsonListObject
+    internal class ICollectionTObject<T> : DigaJsonListObject
     {
         private ICollection<T> _coll;
 
@@ -24,11 +24,11 @@ namespace Diga.Core.Json
             this._coll.Clear();
         }
 
-        public override void Add(object value, JsonOptions options = null)
+        public override void Add(object value, DigaJsonOptions options = null)
         {
             if (value == null && typeof(T).IsValueType)
             {
-                Json.HandleException(new JsonException("JSO0014: JSON error detected. Cannot add null to a collection of '" + typeof(T) + "' elements."), options);
+                DigaJson.HandleException(new DigaJsonException("JSO0014: JSON error detected. Cannot add null to a collection of '" + typeof(T) + "' elements."), options);
             }
 
             this._coll.Add((T)value);

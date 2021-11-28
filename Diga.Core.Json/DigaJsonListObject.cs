@@ -8,7 +8,7 @@ namespace Diga.Core.Json
     /// <summary>
     /// Defines an object that handles list deserialization.
     /// </summary>
-    public abstract class JsonListObject
+    public abstract class DigaJsonListObject
     {
         /// <summary>
         /// Gets or sets the list object.
@@ -28,7 +28,7 @@ namespace Diga.Core.Json
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="options">The options.</param>
-        public abstract void Add(object value, JsonOptions options = null);
+        public abstract void Add(object value, DigaJsonOptions options = null);
 
         /// <summary>
         /// Gets the current context.

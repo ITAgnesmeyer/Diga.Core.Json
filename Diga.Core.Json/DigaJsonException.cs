@@ -7,16 +7,12 @@ using System.Runtime.Serialization;
 namespace Diga.Core.Json
 {
 
-    /// <summary>
-    /// Defines a callback delegate to customize JSON serialization and deserialization.
-    /// </summary>
-    public delegate void JsonCallback(JsonEventArgs e);
-
+   
     /// <summary>
     /// The exception that is thrown when a JSON error occurs.
     /// </summary>
     [Serializable]
-    public class JsonException : Exception
+    public class DigaJsonException : Exception
     {
         /// <summary>
         /// The commn error prefix.
@@ -24,47 +20,47 @@ namespace Diga.Core.Json
         public const string Prefix = "JSO";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonException"/> class.
+        /// Initializes a new instance of the <see cref="DigaJsonException"/> class.
         /// </summary>
-        public JsonException()
+        public DigaJsonException()
             : base(Prefix + "0001: JSON exception.")
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonException"/> class.
+        /// Initializes a new instance of the <see cref="DigaJsonException"/> class.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public JsonException(string message)
+        public DigaJsonException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonException"/> class.
+        /// Initializes a new instance of the <see cref="DigaJsonException"/> class.
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="innerException">The exception that is the cause of the current exception, or a null reference (<see langword="Nothing" /> in Visual Basic) if no inner exception is specified.</param>
-        public JsonException(string message, Exception innerException)
+        public DigaJsonException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonException"/> class.
+        /// Initializes a new instance of the <see cref="DigaJsonException"/> class.
         /// </summary>
         /// <param name="innerException">The inner exception.</param>
-        public JsonException(Exception innerException)
+        public DigaJsonException(Exception innerException)
             : base(null, innerException)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonException"/> class.
+        /// Initializes a new instance of the <see cref="DigaJsonException"/> class.
         /// </summary>
         /// <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual information about the source or destination.</param>
-        protected JsonException(SerializationInfo info, StreamingContext context)
+        protected DigaJsonException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }

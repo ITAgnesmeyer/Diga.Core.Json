@@ -133,10 +133,10 @@ namespace Diga.Core.Json
         /// <param name="elementsCount">The elements count.</param>
         /// <param name="options">The options.</param>
         /// <returns>A new or existing instance.</returns>
-        public object GetOrCreateInstance(object target, int elementsCount, JsonOptions options = null)
+        public object GetOrCreateInstance(object target, int elementsCount, DigaJsonOptions options = null)
         {
             object targetValue;
-            if (options != null && options.SerializationOptions.HasFlag(JsonSerializationOptions.ContinueOnValueError))
+            if (options != null && options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.ContinueOnValueError))
             {
                 try
                 {
@@ -158,7 +158,7 @@ namespace Diga.Core.Json
                 if (this.Type.IsInterface)
                     return null;
 
-                targetValue = Json.CreateInstance(target, this.Type, elementsCount, options, targetValue);
+                targetValue = DigaJson.CreateInstance(target, this.Type, elementsCount, options, targetValue);
                 if (targetValue != null)
                 {
                     this.Accessor.Set(target, targetValue);
@@ -175,7 +175,7 @@ namespace Diga.Core.Json
         /// <param name="key">The entry key.</param>
         /// <param name="value">The entry value.</param>
         /// <param name="options">The options.</param>
-        public void ApplyEntry(IDictionary dictionary, object target, string key, object value, JsonOptions options = null)
+        public void ApplyEntry(IDictionary dictionary, object target, string key, object value, DigaJsonOptions options = null)
         {
             if (options?.ApplyEntryCallback != null)
             {
@@ -185,9 +185,9 @@ namespace Diga.Core.Json
                     ["member"] = this
                 };
 
-                var e = new JsonEventArgs(null, value, og, options, key, target)
+                var e = new DigaJsonEventArgs(null, value, og, options, key, target)
                 {
-                    EventType = JsonEventType.ApplyEntry
+                    EventType = DigaJsonEventType.ApplyEntry
                 };
                 options.ApplyEntryCallback(e);
                 if (e.Handled)
@@ -199,24 +199,24 @@ namespace Diga.Core.Json
             if (value is IDictionary dic)
             {
                 var targetValue = GetOrCreateInstance(target, dic.Count, options);
-                Json.Apply(dic, targetValue, options);
+                DigaJson.Apply(dic, targetValue, options);
                 return;
 
             }
 
-            var lo = Json.GetListObject(this.Type, options, target, value, dictionary, key);
+            var lo = DigaJson.GetListObject(this.Type, options, target, value, dictionary, key);
             if (lo != null)
             {
                 if (value is IEnumerable enumerable)
                 {
                     lo.List = GetOrCreateInstance(target, enumerable is ICollection coll ? coll.Count : 0, options);
-                    Json.ApplyToListTarget(target, enumerable, lo, options);
+                    DigaJson.ApplyToListTarget(target, enumerable, lo, options);
                     return;
                 }
             }
 
 
-            var cvalue = Json.ChangeType(target, value, this.Type, options);
+            var cvalue = DigaJson.ChangeType(target, value, this.Type, options);
             this.Accessor.Set(target, cvalue);
         }
 
@@ -244,7 +244,7 @@ namespace Diga.Core.Json
             if (type != this.Type)
                 return false;
 
-            return Json.IsZeroValueType(value);
+            return DigaJson.IsZeroValueType(value);
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace Diga.Core.Json
         /// <returns>true if both values are equal; false otherwise.</returns>
         public bool EqualsDefaultValue(object value)
         {
-            return Json.AreValuesEqual(this.DefaultValue, value);
+            return DigaJson.AreValuesEqual(this.DefaultValue, value);
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace Diga.Core.Json
         /// <param name="options">The options. May be null.</param>
         /// <param name="member">The member. May not be null.</param>
         /// <returns>true if item is successfully removed; otherwise, false.</returns>
-        public static bool RemoveDeserializationMember(Type type, JsonOptions options, MemberDefinition member)
+        public static bool RemoveDeserializationMember(Type type, DigaJsonOptions options, MemberDefinition member)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -272,7 +272,7 @@ namespace Diga.Core.Json
             if (member == null)
                 throw new ArgumentNullException(nameof(member));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             return TypeDef.RemoveDeserializationMember(type, options, member);
         }
 
@@ -283,7 +283,7 @@ namespace Diga.Core.Json
         /// <param name="options">The options. May be null.</param>
         /// <param name="member">The member. May not be null.</param>
         /// <returns>true if item is successfully removed; otherwise, false.</returns>
-        public static bool RemoveSerializationMember(Type type, JsonOptions options, MemberDefinition member)
+        public static bool RemoveSerializationMember(Type type, DigaJsonOptions options, MemberDefinition member)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -291,7 +291,7 @@ namespace Diga.Core.Json
             if (member == null)
                 throw new ArgumentNullException(nameof(member));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             return TypeDef.RemoveSerializationMember(type, options, member);
         }
 
@@ -302,7 +302,7 @@ namespace Diga.Core.Json
         /// <param name="options">The options. May be null.</param>
         /// <param name="member">The member. May not be null.</param>
         /// <returns>true if item is successfully added; otherwise, false.</returns>
-        public static void AddDeserializationMember(Type type, JsonOptions options, MemberDefinition member)
+        public static void AddDeserializationMember(Type type, DigaJsonOptions options, MemberDefinition member)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -310,7 +310,7 @@ namespace Diga.Core.Json
             if (member == null)
                 throw new ArgumentNullException(nameof(member));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             TypeDef.AddDeserializationMember(type, options, member);
         }
 
@@ -321,7 +321,7 @@ namespace Diga.Core.Json
         /// <param name="options">The options. May be null.</param>
         /// <param name="member">The member. May not be null.</param>
         /// <returns>true if item is successfully added; otherwise, false.</returns>
-        public static void AddSerializationMember(Type type, JsonOptions options, MemberDefinition member)
+        public static void AddSerializationMember(Type type, DigaJsonOptions options, MemberDefinition member)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -329,7 +329,7 @@ namespace Diga.Core.Json
             if (member == null)
                 throw new ArgumentNullException(nameof(member));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             TypeDef.AddSerializationMember(type, options, member);
         }
 
@@ -339,12 +339,12 @@ namespace Diga.Core.Json
         /// <param name="type">The type. May not be null.</param>
         /// <param name="options">The options. May be null.</param>
         /// <returns>A list of serialization members.</returns>
-        public static MemberDefinition[] GetSerializationMembers(Type type, JsonOptions options = null)
+        public static MemberDefinition[] GetSerializationMembers(Type type, DigaJsonOptions options = null)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             return TypeDef.GetSerializationMembers(type, options);
         }
 
@@ -354,12 +354,12 @@ namespace Diga.Core.Json
         /// <param name="type">The type. May not be null.</param>
         /// <param name="options">The options. May be null.</param>
         /// <returns>A list of deserialization members.</returns>
-        public static MemberDefinition[] GetDeserializationMembers(Type type, JsonOptions options = null)
+        public static MemberDefinition[] GetDeserializationMembers(Type type, DigaJsonOptions options = null)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            options = options ?? new JsonOptions();
+            options = options ?? new DigaJsonOptions();
             return TypeDef.GetDeserializationMembers(type, options);
         }
 

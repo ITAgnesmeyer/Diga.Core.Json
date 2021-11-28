@@ -19,11 +19,11 @@ namespace Diga.Core.Json
             private readonly List<MemberDefinition> _deserializationMembers;
             private readonly Type _type;
 
-            private TypeDef(Type type, JsonOptions options)
+            private TypeDef(Type type, DigaJsonOptions options)
             {
                 this._type = type;
                 IEnumerable<MemberDefinition> members;
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseReflection))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseReflection))
                 {
                     members = EnumerateDefinitionsUsingReflection(true, type, options);
                 }
@@ -34,7 +34,7 @@ namespace Diga.Core.Json
 
                 this._serializationMembers = new List<MemberDefinition>(options.FinalizeSerializationMembers(type, members));
 
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseReflection))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseReflection))
                 {
                     members = EnumerateDefinitionsUsingReflection(false, type, options);
                 }
@@ -59,7 +59,7 @@ namespace Diga.Core.Json
                 return null;
             }
 
-            public void ApplyEntry(IDictionary dictionary, object target, string key, object value, JsonOptions options)
+            public void ApplyEntry(IDictionary dictionary, object target, string key, object value, DigaJsonOptions options)
             {
                 var member = GetDeserializationMember(key);
                 if (member == null)
@@ -68,7 +68,7 @@ namespace Diga.Core.Json
                 member.ApplyEntry(dictionary, target, key, value, options);
             }
 
-            public void WriteValues(TextWriter writer, object component, IDictionary<object, object> objectGraph, JsonOptions options)
+            public void WriteValues(TextWriter writer, object component, IDictionary<object, object> objectGraph, DigaJsonOptions options)
             {
                 var first = true;
                 foreach (var member in this._serializationMembers)
@@ -78,9 +78,9 @@ namespace Diga.Core.Json
                     var value = member.Accessor.Get(component);
                     if (options.WriteNamedValueObjectCallback != null)
                     {
-                        var e = new JsonEventArgs(writer, value, objectGraph, options, name, component)
+                        var e = new DigaJsonEventArgs(writer, value, objectGraph, options, name, component)
                         {
-                            EventType = JsonEventType.WriteNamedValueObject,
+                            EventType = DigaJsonEventType.WriteNamedValueObject,
                             First = first
                         };
                         options.WriteNamedValueObjectCallback(e);
@@ -93,25 +93,25 @@ namespace Diga.Core.Json
                         value = e.Value;
                     }
 
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.SkipNullPropertyValues))
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.SkipNullPropertyValues))
                     {
                         if (value == null)
                             continue;
                     }
 
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.SkipZeroValueTypes))
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.SkipZeroValueTypes))
                     {
                         if (member.IsZeroValue(value))
                             continue;
                     }
 
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.SkipNullDateTimeValues))
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.SkipNullDateTimeValues))
                     {
                         if (member.IsNullDateTimeValue(value))
                             continue;
                     }
 
-                    var skipDefaultValues = options.SerializationOptions.HasFlag(JsonSerializationOptions.SkipDefaultValues);
+                    var skipDefaultValues = options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.SkipDefaultValues);
                     if (skipDefaultValues && member.HasDefaultValue)
                     {
                         if (member.EqualsDefaultValue(value))
@@ -129,11 +129,11 @@ namespace Diga.Core.Json
 
                     if (nameChanged)
                     {
-                        Json.WriteNameValue(writer, name, value, objectGraph, options);
+                        DigaJson.WriteNameValue(writer, name, value, objectGraph, options);
                     }
                     else
                     {
-                        if (options.SerializationOptions.HasFlag(JsonSerializationOptions.WriteKeysWithoutQuotes))
+                        if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.WriteKeysWithoutQuotes))
                         {
                             writer.Write(member.EscapedWireName);
                         }
@@ -145,7 +145,7 @@ namespace Diga.Core.Json
                         }
 
                         writer.Write(':');
-                        Json.WriteValue(writer, value, objectGraph, options);
+                        DigaJson.WriteValue(writer, value, objectGraph, options);
                     }
                 }
             }
@@ -155,12 +155,12 @@ namespace Diga.Core.Json
                 return this._type.AssemblyQualifiedName;
             }
 
-            private static string GetKey(Type type, JsonOptions options)
+            private static string GetKey(Type type, DigaJsonOptions options)
             {
                 return type.AssemblyQualifiedName + '\0' + options.GetCacheKey();
             }
 
-            private static TypeDef UnlockedGet(Type type, JsonOptions options)
+            private static TypeDef UnlockedGet(Type type, DigaJsonOptions options)
             {
                 var key = GetKey(type, options);
                 if (!_TypeDefs.TryGetValue(key, out var ta))
@@ -179,7 +179,7 @@ namespace Diga.Core.Json
                 }
             }
 
-            public static bool RemoveDeserializationMember(Type type, JsonOptions options, MemberDefinition member)
+            public static bool RemoveDeserializationMember(Type type, DigaJsonOptions options, MemberDefinition member)
             {
                 lock (_lock)
                 {
@@ -188,7 +188,7 @@ namespace Diga.Core.Json
                 }
             }
 
-            public static bool RemoveSerializationMember(Type type, JsonOptions options, MemberDefinition member)
+            public static bool RemoveSerializationMember(Type type, DigaJsonOptions options, MemberDefinition member)
             {
                 lock (_lock)
                 {
@@ -197,7 +197,7 @@ namespace Diga.Core.Json
                 }
             }
 
-            public static void AddDeserializationMember(Type type, JsonOptions options, MemberDefinition member)
+            public static void AddDeserializationMember(Type type, DigaJsonOptions options, MemberDefinition member)
             {
                 lock (_lock)
                 {
@@ -206,7 +206,7 @@ namespace Diga.Core.Json
                 }
             }
 
-            public static void AddSerializationMember(Type type, JsonOptions options, MemberDefinition member)
+            public static void AddSerializationMember(Type type, DigaJsonOptions options, MemberDefinition member)
             {
                 lock (_lock)
                 {
@@ -215,7 +215,7 @@ namespace Diga.Core.Json
                 }
             }
 
-            public static MemberDefinition[] GetDeserializationMembers(Type type, JsonOptions options)
+            public static MemberDefinition[] GetDeserializationMembers(Type type, DigaJsonOptions options)
             {
                 lock (_lock)
                 {
@@ -224,7 +224,7 @@ namespace Diga.Core.Json
                 }
             }
 
-            public static MemberDefinition[] GetSerializationMembers(Type type, JsonOptions options)
+            public static MemberDefinition[] GetSerializationMembers(Type type, DigaJsonOptions options)
             {
                 lock (_lock)
                 {
@@ -233,7 +233,7 @@ namespace Diga.Core.Json
                 }
             }
 
-            public static TypeDef Get(Type type, JsonOptions options)
+            public static TypeDef Get(Type type, DigaJsonOptions options)
             {
                 lock (_lock)
                 {
@@ -248,7 +248,7 @@ namespace Diga.Core.Json
                     if (!_IsKvPe.TryGetValue(type, out var kv))
                     {
                         kv = new KeyValueType();
-                        Json.InternalIsKeyValuePairEnumerable(type, out kv.KeyType, out kv.ValueType);
+                        DigaJson.InternalIsKeyValuePairEnumerable(type, out kv.KeyType, out kv.ValueType);
                         _IsKvPe.Add(type, kv);
                     }
 
@@ -258,13 +258,13 @@ namespace Diga.Core.Json
                 }
             }
 
-            private static IEnumerable<MemberDefinition> EnumerateDefinitionsUsingReflection(bool serialization, Type type, JsonOptions options)
+            private static IEnumerable<MemberDefinition> EnumerateDefinitionsUsingReflection(bool serialization, Type type, DigaJsonOptions options)
             {
                 foreach (var info in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseJsonAttribute))
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseJsonAttribute))
                     {
-                        var ja = Json.GetJsonAttribute(info);
+                        var ja = DigaJson.GetJsonAttribute(info);
                         if (ja != null)
                         {
                             if (serialization && ja.IgnoreWhenSerializing)
@@ -275,15 +275,15 @@ namespace Diga.Core.Json
                         }
                     }
 
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseXmlIgnore))
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseXmlIgnore))
                     {
                         if (info.IsDefined(typeof(XmlIgnoreAttribute), true))
                             continue;
                     }
 
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseScriptIgnore))
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseScriptIgnore))
                     {
-                        if (Json.HasScriptIgnore(info))
+                        if (DigaJson.HasScriptIgnore(info))
                             continue;
                     }
 
@@ -298,7 +298,7 @@ namespace Diga.Core.Json
                     }
                     // else we don't test the set method, as some properties can still be deserialized (collections)
 
-                    var name = Json.GetObjectName(info, info.Name);
+                    var name = DigaJson.GetObjectName(info, info.Name);
 
                     var ma = new MemberDefinition
                     {
@@ -308,14 +308,14 @@ namespace Diga.Core.Json
                     if (serialization)
                     {
                         ma.WireName = name;
-                        ma.EscapedWireName = Json.EscapeString(name);
+                        ma.EscapedWireName = DigaJson.EscapeString(name);
                     }
                     else
                     {
                         ma.WireName = name;
                     }
 
-                    ma.HasDefaultValue = Json.TryGetObjectDefaultValue(info, out var defaultValue);
+                    ma.HasDefaultValue = DigaJson.TryGetObjectDefaultValue(info, out var defaultValue);
                     ma.DefaultValue = defaultValue;
                     if (info.DeclaringType != null)
                         ma.Accessor = (IMemberAccessor)Activator.CreateInstance(
@@ -324,13 +324,13 @@ namespace Diga.Core.Json
                     yield return ma;
                 }
 
-                if (options.SerializationOptions.HasFlag(JsonSerializationOptions.SerializeFields))
+                if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.SerializeFields))
                 {
                     foreach (var info in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
                     {
-                        if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseJsonAttribute))
+                        if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseJsonAttribute))
                         {
-                            var ja = Json.GetJsonAttribute(info);
+                            var ja = DigaJson.GetJsonAttribute(info);
                             if (ja != null)
                             {
                                 if (serialization && ja.IgnoreWhenSerializing)
@@ -341,19 +341,19 @@ namespace Diga.Core.Json
                             }
                         }
 
-                        if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseXmlIgnore))
+                        if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseXmlIgnore))
                         {
                             if (info.IsDefined(typeof(XmlIgnoreAttribute), true))
                                 continue;
                         }
 
-                        if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseScriptIgnore))
+                        if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseScriptIgnore))
                         {
-                            if (Json.HasScriptIgnore(info))
+                            if (DigaJson.HasScriptIgnore(info))
                                 continue;
                         }
 
-                        var name = Json.GetObjectName(info, info.Name);
+                        var name = DigaJson.GetObjectName(info, info.Name);
 
                         var ma = new MemberDefinition
                         {
@@ -363,14 +363,14 @@ namespace Diga.Core.Json
                         if (serialization)
                         {
                             ma.WireName = name;
-                            ma.EscapedWireName = Json.EscapeString(name);
+                            ma.EscapedWireName = DigaJson.EscapeString(name);
                         }
                         else
                         {
                             ma.WireName = name;
                         }
 
-                        ma.HasDefaultValue = Json.TryGetObjectDefaultValue(info, out var defaultValue);
+                        ma.HasDefaultValue = DigaJson.TryGetObjectDefaultValue(info, out var defaultValue);
                         ma.DefaultValue = defaultValue;
                         ma.Accessor = (IMemberAccessor)Activator.CreateInstance(typeof(FieldInfoAccessor), info);
                         yield return ma;
@@ -378,13 +378,13 @@ namespace Diga.Core.Json
                 }
             }
 
-            private static IEnumerable<MemberDefinition> EnumerateDefinitionsUsingTypeDescriptors(bool serialization, Type type, JsonOptions options)
+            private static IEnumerable<MemberDefinition> EnumerateDefinitionsUsingTypeDescriptors(bool serialization, Type type, DigaJsonOptions options)
             {
                 foreach (var descriptor in TypeDescriptor.GetProperties(type).Cast<PropertyDescriptor>())
                 {
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseJsonAttribute))
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseJsonAttribute))
                     {
-                        var ja = descriptor.GetAttribute<JsonAttribute>();
+                        var ja = descriptor.GetAttribute<DigaJsonAttribute>();
                         if (ja != null)
                         {
                             if (serialization && ja.IgnoreWhenSerializing)
@@ -395,22 +395,22 @@ namespace Diga.Core.Json
                         }
                     }
 
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseXmlIgnore))
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseXmlIgnore))
                     {
                         if (descriptor.GetAttribute<XmlIgnoreAttribute>() != null)
                             continue;
                     }
 
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.UseScriptIgnore))
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.UseScriptIgnore))
                     {
-                        if (Json.HasScriptIgnore(descriptor))
+                        if (DigaJson.HasScriptIgnore(descriptor))
                             continue;
                     }
 
-                    if (options.SerializationOptions.HasFlag(JsonSerializationOptions.SkipGetOnly) && descriptor.IsReadOnly)
+                    if (options.SerializationOptions.HasFlag(DigaJsonSerializationOptions.SkipGetOnly) && descriptor.IsReadOnly)
                         continue;
 
-                    var name = Json.GetObjectName(descriptor, descriptor.Name);
+                    var name = DigaJson.GetObjectName(descriptor, descriptor.Name);
 
                     var ma = new MemberDefinition
                     {
@@ -420,14 +420,14 @@ namespace Diga.Core.Json
                     if (serialization)
                     {
                         ma.WireName = name;
-                        ma.EscapedWireName = Json.EscapeString(name);
+                        ma.EscapedWireName = DigaJson.EscapeString(name);
                     }
                     else
                     {
                         ma.WireName = name;
                     }
 
-                    ma.HasDefaultValue = Json.TryGetObjectDefaultValue(descriptor, out var defaultValue);
+                    ma.HasDefaultValue = DigaJson.TryGetObjectDefaultValue(descriptor, out var defaultValue);
                     ma.DefaultValue = defaultValue;
                     ma.Accessor = (IMemberAccessor)Activator.CreateInstance(typeof(PropertyDescriptorAccessor), descriptor);
                     yield return ma;

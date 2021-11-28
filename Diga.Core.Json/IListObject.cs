@@ -5,7 +5,7 @@
 
 namespace Diga.Core.Json
 {
-    internal class IListObject : JsonListObject
+    internal class IListObject : DigaJsonListObject
     {
         private IList _list;
 
@@ -24,7 +24,7 @@ namespace Diga.Core.Json
             this._list.Clear();
         }
 
-        public override void Add(object value, JsonOptions options = null)
+        public override void Add(object value, DigaJsonOptions options = null)
         {
             this._list.Add(value);
         }

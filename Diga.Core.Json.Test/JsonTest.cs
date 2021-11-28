@@ -19,7 +19,7 @@ namespace Diga.Core.Json.Test
             obj.Name = "hallo";
             obj.Number =10;
             obj.Description = "Beschreibung";
-            string json = Json.Serialize(obj);
+            string json = DigaJson.Serialize(obj);
             Assert.IsNotNull(json);
             Assert.AreEqual(TestJson, json);
 
@@ -30,7 +30,7 @@ namespace Diga.Core.Json.Test
             var obj = new TestObj();
             obj.Name = "hallo";
             obj.Number = 10;
-            string json = Json.Serialize(obj);
+            string json = DigaJson.Serialize(obj);
             Assert.IsNotNull(json);
             Assert.AreEqual(TestJsonNotAll , json);
         }
@@ -45,7 +45,7 @@ namespace Diga.Core.Json.Test
                 }
             };
 
-            string json = Json.Serialize(complex);
+            string json = DigaJson.Serialize(complex);
             Assert.IsNotNull(json);
             Assert.AreEqual("{\"TestObject\":{\"Name\":\"hallo\"}}", json);
         }
@@ -64,7 +64,7 @@ namespace Diga.Core.Json.Test
                 Number = 10,
                 TestObject = obj
             };
-            string json = Json.Serialize(complex);
+            string json = DigaJson.Serialize(complex);
             Assert.IsNotNull (json);
             Assert.AreEqual (TestComplexJson, json);
 
@@ -74,7 +74,7 @@ namespace Diga.Core.Json.Test
         {
             var obj = new TestObj { Name ="hallo", Number =10 , Description="Description"};
                          
-            string json = Json.SerializeFormatted(obj);
+            string json = DigaJson.SerializeFormatted(obj);
             Assert.IsNotNull(json);
             Assert.AreEqual(TestJsonFomrated, json);
 
@@ -98,14 +98,14 @@ namespace Diga.Core.Json.Test
                 Number = 10,
                 TestObject = obj
             };
-            string json = Json.SerializeFormatted(complex);
+            string json = DigaJson.SerializeFormatted(complex);
             Assert.IsNotNull (json);
             Assert.AreEqual (TestComplexJsonFomrated, json);
         }
         [TestMethod]
         public void DeserializeTest()
         {
-            TestObj obj = Json.Deserialize<TestObj>(TestJson);
+            TestObj obj = DigaJson.Deserialize<TestObj>(TestJson);
             Assert.IsNotNull(obj);
             Assert.AreEqual("hallo", obj.Name);
             Assert.AreEqual(10, obj.Number);
@@ -116,7 +116,7 @@ namespace Diga.Core.Json.Test
         [TestMethod]
         public void DeserializeNotAllTest()
         {
-            TestObj obj = Json.Deserialize<TestObj>(TestJsonNotAll);
+            TestObj obj = DigaJson.Deserialize<TestObj>(TestJsonNotAll);
             Assert.IsNotNull(obj);
             Assert.AreEqual("hallo", obj.Name);
             Assert.AreEqual(10, obj.Number);
@@ -126,7 +126,7 @@ namespace Diga.Core.Json.Test
         [TestMethod]
         public void DeserializeFormatedTest()
         {
-            TestObj obj = Json.Deserialize<TestObj>(TestJsonFomrated);
+            TestObj obj = DigaJson.Deserialize<TestObj>(TestJsonFomrated);
             Assert.IsNotNull(obj);
             Assert.AreEqual("hallo", obj.Name);
             Assert.AreEqual(10, obj.Number);

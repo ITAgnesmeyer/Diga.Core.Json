@@ -9,17 +9,17 @@ namespace Diga.Core.Json
     /// <summary>
     /// Define options for JSON.
     /// </summary>
-    public sealed class JsonOptions
+    public sealed class DigaJsonOptions
     {
         private readonly List<Exception> _exceptions = new List<Exception>();
         internal static DateTimeStyles _defaultDateTimeStyles = DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowInnerWhite | DateTimeStyles.AllowLeadingWhite | DateTimeStyles.AllowTrailingWhite | DateTimeStyles.AllowWhiteSpaces;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonOptions" /> class.
+        /// Initializes a new instance of the <see cref="DigaJsonOptions" /> class.
         /// </summary>
-        public JsonOptions()
+        public DigaJsonOptions()
         {
-            this.SerializationOptions = JsonSerializationOptions.Default;
+            this.SerializationOptions = DigaJsonSerializationOptions.Default;
             this.ThrowExceptions = true;
             this.DateTimeStyles = _defaultDateTimeStyles;
             this.FormattingTab = " ";
@@ -136,55 +136,55 @@ namespace Diga.Core.Json
         /// Gets or sets the serialization options.
         /// </summary>
         /// <value>The serialization options.</value>
-        public JsonSerializationOptions SerializationOptions { get; set; }
+        public DigaJsonSerializationOptions SerializationOptions { get; set; }
 
         /// <summary>
         /// Gets or sets a write value callback.
         /// </summary>
         /// <value>The callback.</value>
-        public JsonCallback WriteValueCallback { get; set; }
+        public DigaJsonCallback WriteValueCallback { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is called before an object (not a value) is serialized.
         /// </summary>
         /// <value>The callback.</value>
-        public JsonCallback BeforeWriteObjectCallback { get; set; }
+        public DigaJsonCallback BeforeWriteObjectCallback { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is called before an object (not a value) is serialized.
         /// </summary>
         /// <value>The callback.</value>
-        public JsonCallback AfterWriteObjectCallback { get; set; }
+        public DigaJsonCallback AfterWriteObjectCallback { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is called before an object field or property is serialized.
         /// </summary>
         /// <value>The callback.</value>
-        public JsonCallback WriteNamedValueObjectCallback { get; set; }
+        public DigaJsonCallback WriteNamedValueObjectCallback { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is called before an instance of an object is created.
         /// </summary>
         /// <value>The callback.</value>
-        public JsonCallback CreateInstanceCallback { get; set; }
+        public DigaJsonCallback CreateInstanceCallback { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is called during deserialization, before a dictionary entry is mapped to a target object.
         /// </summary>
         /// <value>The callback.</value>
-        public JsonCallback MapEntryCallback { get; set; }
+        public DigaJsonCallback MapEntryCallback { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is called during deserialization, before a dictionary entry is applied to a target object.
         /// </summary>
         /// <value>The callback.</value>
-        public JsonCallback ApplyEntryCallback { get; set; }
+        public DigaJsonCallback ApplyEntryCallback { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is called during deserialization, to deserialize a list object.
         /// </summary>
         /// <value>The callback.</value>
-        public JsonCallback GetListObjectCallback { get; set; }
+        public DigaJsonCallback GetListObjectCallback { get; set; }
 
         /// <summary>
         /// Adds an exception to the list of exceptions.
@@ -196,7 +196,7 @@ namespace Diga.Core.Json
                 throw new ArgumentNullException(nameof(error));
 
             if (this._exceptions.Count >= this.MaximumExceptionsCount)
-                throw new JsonException("JSO0015: Two many JSON errors detected (" + this._exceptions.Count + ").", error);
+                throw new DigaJsonException("JSO0015: Two many JSON errors detected (" + this._exceptions.Count + ").", error);
 
             this._exceptions.Add(error);
         }
@@ -207,9 +207,9 @@ namespace Diga.Core.Json
         /// Clones this instance.
         /// </summary>
         /// <returns>A newly created insance of this class with all values copied.</returns>
-        public JsonOptions Clone()
+        public DigaJsonOptions Clone()
         {
-            var clone = new JsonOptions
+            var clone = new DigaJsonOptions
             {
                 AfterWriteObjectCallback = this.AfterWriteObjectCallback,
                 ApplyEntryCallback = this.ApplyEntryCallback,

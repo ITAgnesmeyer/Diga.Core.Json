@@ -8,7 +8,7 @@ namespace Diga.Core.Json
     /// Define options for JSON serialization.
     /// </summary>
     [Flags]
-    public enum JsonSerializationOptions
+    public enum DigaJsonSerializationOptions
     {
         /// <summary>
         /// No option.

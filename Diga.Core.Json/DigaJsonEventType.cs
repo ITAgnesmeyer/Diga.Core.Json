@@ -5,7 +5,7 @@ namespace Diga.Core.Json
     /// <summary>
     /// Defines a type of JSON event.
     /// </summary>
-    public enum JsonEventType
+    public enum DigaJsonEventType
     {
         /// <summary>
         /// An unspecified type of event.
