@@ -20,6 +20,9 @@
 		<Version>1.0.1</Version>
 		<PackageIcon>logo.png</PackageIcon>
 		<RootNamespace>Diga.Core.Json</RootNamespace>
+		<SignAssembly>true</SignAssembly>
+		<DelaySign>false</DelaySign>
+		<AssemblyOriginatorKeyFile>diga.core.json.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 
